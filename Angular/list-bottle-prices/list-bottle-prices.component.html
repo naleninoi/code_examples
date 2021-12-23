@@ -1,0 +1,30 @@
+<mat-card class="table-container">
+  <filtered-table
+    [apiEndpoint]="apiEndpoint"
+    [columns]="columns"
+    [filters]="filters"
+    [allowPaging]="false"
+    emptyMessage="Типы баллонов не найдены"
+    (itemClick)="onItemClick($event)"
+    [watchItemUpdatesDestination]="watchItemUpdatesDestination"
+  ></filtered-table>
+</mat-card>
+
+<ng-template #officeColumnTemplate let-item="element">
+  <span *ngIf="item.available"> {{item.officeTitle}}</span>
+  <span *ngIf="!item.available && !item.officeIsDeleted" [style.color]="colors.unavailable" > {{item.officeTitle}}</span>
+  <span *ngIf="item.officeIsDeleted" class="deleted" > {{item.officeTitle}}</span>
+</ng-template>
+
+<ng-template #typeColumnTemplate let-item="element">
+  <span *ngIf="item.available"> {{item.bottleTypeTitle}}</span>
+  <span *ngIf="!item.available && !item.bottleTypeIsDeleted" [style.color]="colors.unavailable" > {{item.bottleTypeTitle}}</span>
+  <span *ngIf="item.bottleTypeIsDeleted" class="deleted" > {{item.bottleTypeTitle}}</span>
+</ng-template>
+
+<ng-template #pricesColumnTemplate let-item="element">
+  <input *ngIf="item.allowEdit" [(ngModel)]="item.price" (blur)="checkPriceInput(item)" (keyup)="catchEnterKeyEvent($event, item)">
+
+  <span *ngIf="!item.allowEdit && item.available"> {{item.price.toFixed(2)}}</span>
+  <span *ngIf="!item.allowEdit && !item.available" [style.color]="colors.unavailable" > {{item.price.toFixed(2)}}</span>
+</ng-template>

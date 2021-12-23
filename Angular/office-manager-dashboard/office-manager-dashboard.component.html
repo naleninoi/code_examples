@@ -1,0 +1,113 @@
+<div class="cols">
+  <div class="col orders-col">
+
+    <div class="orders">
+
+      <mat-toolbar>
+        <span>Новые заказы</span>
+        <div class="filters-container">
+          <mat-button-toggle-group
+            name="newOrders"
+            value="myNewOrders"
+            (change)="onChangeNewOrders($event)"
+            aria-label="New Orders">
+            <mat-button-toggle *ngFor="let filter of newOrdersFilterOptions" [value]="filter.value">{{filter.title}}</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+        <div class="bell-icon" *ngIf="newOrdersInfoButton" matTooltip="Новый заказ!" matTooltipPosition="above">
+          <fa-icon [icon]="icons.getIcon('bell')" ></fa-icon>
+        </div>
+      </mat-toolbar>
+      <div class="orders-scroll-zone">
+        <div class="orders-list"
+             cdkDropList id="newOrders"
+             (cdkDropListDropped)="onDropToNewOrdersList($event)"
+             [cdkDropListConnectedTo]="['processingOrders']"
+             [cdkDropListData]="dataSourceNew.value"
+        >
+          <app-order-item *ngFor="let order of dataSourceNew|async"
+                          [order]="order"
+                          (orderTaken)="onOrderTakenByManager(order)"
+                          (mapCenteredToOrder)="onMapCenteredToOrder(order)"
+          >
+          </app-order-item>
+        </div>
+      </div>
+    </div>
+
+    <div class="orders">
+
+      <mat-toolbar>
+        <span>В обработке</span>
+        <div class="filters-container">
+          <mat-button-toggle-group
+            name="processingOrders"
+            value="myProcessingOrders"
+            (change)="onChangeProcessingOrders($event)"
+            aria-label="New Orders">
+            <mat-button-toggle *ngFor="let filter of processingOrdersFilterOptions" [value]="filter.value" >{{filter.title}}</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+      </mat-toolbar>
+      <div class="orders-scroll-zone">
+        <div class="orders-list"
+             cdkDropList id="processingOrders"
+             (cdkDropListDropped)="onDropToProcessingOrdersList($event)"
+             [cdkDropListConnectedTo]="getConnectedLists()"
+
+             [cdkDropListData]="dataSourceProcessing.value"
+        >
+          <app-order-item *ngFor="let order of dataSourceProcessing|async"
+                          [order]="order"
+                          (orderTaken)="onOrderTakenByManager(order)"
+                          (orderDragged)="onOrderDragged(order)"
+                          (orderDropped)="onOrderDropped()"
+                          (mapCenteredToOrder)="onMapCenteredToOrder(order)"
+
+          >
+          </app-order-item>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-map address-map">
+    <ya-map
+      [center]="mapCenter"
+      [zoom]="mapScale"
+      [state]="{ controls: [] }"
+      (ready)="onMapReady($event)">
+        <ya-control *ngFor="let control of mapControls"
+          [type]="control"
+        ></ya-control>
+    </ya-map>
+  </div>
+
+  <div class="col trips-col">
+    <div class="trips">
+      <mat-toolbar>
+        <span>Рейсы</span>
+        <button mat-button mat-icon-button
+        [matMenuTriggerFor]="menu" #menuTrigger
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="onTripAddClick()">Создать новый рейс</button>
+        </mat-menu>
+      </mat-toolbar>
+      <div class="trips-scroll-zone">
+        <div class="trips-list">
+          <app-trip-item *ngFor="let trip of activeTrips" [trip]="trip" [orderDraggedSbj]="orderDraggedSbj"
+          cdkDropList
+          [id]="'trip' + trip.id"
+          [cdkDropListData]="trip"
+          [cdkDropListConnectedTo]="['processingOrders']"
+          (cdkDropListDropped)="onDropProcessingOrderToTrip($event)"
+          >
+          </app-trip-item>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
