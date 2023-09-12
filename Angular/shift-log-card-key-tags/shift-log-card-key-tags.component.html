@@ -1,0 +1,190 @@
+<div *ngIf="_formMode == ShiftLogFormModeEnum.Shifts" class="mb-2 d-flex">
+  <div class="mr-2">
+      <button class="btn btn-outline-primary ignore-vm"
+              title="{{'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.GET_BTN'|translate}}"
+              data-id="getKeyTag"
+              [attr.data-descr]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.GET_BTN'|translate"
+              [disabled]="isKeyTagTransferDisabled"
+              (click)="openGetKeyTagModal()">
+          <i class="fa fa-arrow-down"></i>
+          {{'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.GET_BTN' | translate}}
+      </button>
+  </div>
+
+  <div class="mr-2">
+      <button class="btn btn-outline-primary ignore-vm"
+              [attr.title]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.SET_BTN'|translate"
+              [attr.data-id]="'setKeyTag'"
+              [attr.data-descr]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.SET_BTN'|translate"
+              [disabled]="isKeyTagTransferDisabled"
+              (click)="openSetKeyTagModal()">
+          <i class="fa fa-arrow-up"></i>
+          {{'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.SET_BTN' | translate}}
+      </button>
+  </div>
+
+    <div>
+        <button class="btn btn-outline-primary ignore-vm"
+                [attr.title]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.CORRECT_MISTAKE_BTN'|translate"
+                [attr.data-id]="'correctMistakeKeyTag'"
+                [attr.data-descr]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.CORRECT_MISTAKE_BTN'|translate"
+                [disabled]="isKeyTagTransferDisabled || !hasKeyTagsForCorrection"
+                (click)="openSetKeyTagModal(true)">
+            {{'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.CORRECT_MISTAKE_BTN' | translate}}
+        </button>
+    </div>
+</div>
+
+<div class="d-block w-100">
+        <div *ngIf="keyTagTableData.length == 0; else keyTagTable"
+                class="text-secondary bg-light text-center p-1 mt-1 mb-3">
+                {{'COMMON.NODATA'|translate}}
+        </div>
+
+        <ng-template #keyTagTable>
+            <wj-flex-grid *ngIf="keyTagTableData.length > 0"
+                          id="keyTagsFlexGrid"
+                          #keyTagsFlexGrid
+                          wjCustomizeDirective
+                          [showMarquee]="false"
+                          [selectionMode]="'None'"
+                          headersVisibility="Column"
+                          [itemsSource]="keyTagTableData"
+                          [isReadOnly]="isViewDisabled || !hasEditPermissionStateShift">
+
+                <!-- Ключ-бирка -->
+                <wj-flex-grid-column
+                        [binding]="'keyTag.name'"
+                        [header]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.KEY_TAG'|translate"
+                        [wordWrap]=true
+                        [isReadOnly]="true"
+                        [width]="'*'"
+                        [minWidth]=110>
+                </wj-flex-grid-column>
+
+                <!-- Код оборудования -->
+                <wj-flex-grid-column
+                        [binding]="'keyTag.code'"
+                        [header]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.EQUIPMENT_CODE'|translate"
+                        [wordWrap]=true
+                        [allowResizing]="true"
+                        [isReadOnly]="true"
+                        [maxLength]="160"
+                        [width]="'*'"
+                        [minWidth]=80>
+                </wj-flex-grid-column>
+
+                <!-- Статус -->
+                <wj-flex-grid-column
+                        [binding]="'status'"
+                        [header]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.STATUS'|translate"
+                        [isReadOnly]="true"
+                        [minWidth]=80
+                        [isRequired]="false">
+                    <ng-template wjFlexGridCellTemplate
+                                 [cellType]="'Cell'"
+                                 let-cell="cell">
+                        <span *ngIf="cell.item.status == 1">
+                            {{'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.IN_STORAGE'|translate}}
+                        </span>
+                        <span *ngIf="cell.item.status == 2">
+                            {{'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.IN_TRANSMISSION'|translate}}
+                        </span>
+                        <span *ngIf="cell.item.status == 3">
+                            {{'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.IN_STOCK'|translate}}
+                        </span>
+                    </ng-template>
+                </wj-flex-grid-column>
+
+                <!-- Выдал -->
+                <wj-flex-grid-column
+                        [binding]="'keyTagTransferTable'"
+                        [header]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.ISSUER'|translate"
+                        [isReadOnly]="true"
+                        [minWidth]=80
+                        [width]="'*'"
+                        [isRequired]="false">
+                    <ng-template wjFlexGridCellTemplate
+                                 [cellType]="'Cell'"
+                                 let-cell="cell">
+                        <span>
+                            {{getIssuerNotForStorageFioAndDate(cell, 'fio')}}
+                            <br/>
+                            {{getIssuerNotForStorageFioAndDate(cell, 'date') | date: 'dd.MM.yyyy HH:mm'}}
+                            {{getIssuerNotForStorageFioAndDate(cell, 'date') && cell.item.isFromStorage ? ('AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.FROM_STORAGE'|translate) : ''}}
+                        </span>
+                    </ng-template>
+                </wj-flex-grid-column>
+
+                <!-- Получил -->
+                <wj-flex-grid-column
+                        [binding]="'keyTagTransferTable'"
+                        [header]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.RECEIVER'|translate"
+                        [isReadOnly]="true"
+                        [minWidth]=80
+                        [width]="'*'"
+                        [isRequired]="false">
+                    <ng-template wjFlexGridCellTemplate
+                                 [cellType]="'Cell'"
+                                 let-cell="cell">
+                        <div class="d-flex flex-column">
+                             <span class="erroneous-receiver" *ngIf="getErroneousReceiverNotForStorage(cell)">
+                                {{getErroneousReceiverNotForStorage(cell)}}
+                            </span>
+                            <span>
+                                {{getReceiverNotForStorageFioAndDate(cell, 'fio')}}
+                                <br/>
+                                {{getReceiverNotForStorageFioAndDate(cell, 'date') | date: 'dd.MM.yyyy HH:mm'}}
+                            </span>
+                        </div>
+                    </ng-template>
+                </wj-flex-grid-column>
+
+                <!-- Сдал -->
+                <wj-flex-grid-column
+                        [binding]="'keyTagTransferTable'"
+                        [header]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.PASSED'|translate"
+                        [isReadOnly]="true"
+                        [minWidth]=80
+                        [width]="'*'"
+                        [isRequired]="false">
+                    <ng-template wjFlexGridCellTemplate
+                                 [cellType]="'Cell'"
+                                 let-cell="cell">
+                        <span>
+                            {{getIssuerForStorageFioAndDate(cell, 'fio')}}
+                            <br/>
+                            {{getIssuerForStorageFioAndDate(cell, 'date') | date: 'dd.MM.yyyy HH:mm'}}
+                            {{getIssuerForStorageFioAndDate(cell, 'date') ? ('AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.IN_STORAGE_LOW'|translate) : ''}}
+                        </span>
+                    </ng-template>
+                </wj-flex-grid-column>
+
+                <!-- Принял -->
+                <wj-flex-grid-column
+                        [binding]="'keyTagTransferTable'"
+                        [header]="'AUDITS_SEVERSTAL.SHIFTLOG_CARD.KEY_TAGS.TABLE.ACCEPTED'|translate"
+                        [isReadOnly]="true"
+                        [width]="'*'"
+                        [minWidth]=80
+                        [isReadOnly]="true">
+                    <ng-template wjFlexGridCellTemplate
+                                 [cellType]="'Cell'"
+                                 let-cell="cell">
+                        <div class="d-flex flex-column">
+                            <span class="erroneous-receiver" *ngIf="getErroneousReceiverForStorage(cell)">
+                                {{getErroneousReceiverForStorage(cell)}}
+                            </span>
+                            <span>
+                                {{getReceiverForStorageFioAndDate(cell, 'fio')}}
+                                <br/>
+                                {{getReceiverForStorageFioAndDate(cell, 'date') | date: 'dd.MM.yyyy HH:mm'}}
+                                {{getReceiverForStorageFioAndDate(cell, 'date') ? ' (на хранение)' : ''}}
+                            </span>
+                        </div>
+                    </ng-template>
+                </wj-flex-grid-column>
+
+            </wj-flex-grid>
+        </ng-template>
+</div>
